@@ -8,7 +8,7 @@ function DrawChart(obj) {
 
     // variable initializing is done here
     function init() {
-        chartValues = /*obj.data || */ chartValueGenerator(0, 50, 100); // generates graph data
+        chartValues = /*obj.data */ chartValueGenerator(0, 50, 10); // generates graph data
         maxChartValue = Math.max.apply(null, chartValues);
         element = document.querySelector(elem);
         element.innerHTML = "";
@@ -29,8 +29,6 @@ function DrawChart(obj) {
         return false;
     }
 
-
-
     drawBarGraph();
     // placeLabels();
 
@@ -44,23 +42,64 @@ function DrawChart(obj) {
             graphHeight = height - xAxisDotsWidth / 3,
             lineStroke = (xAxisDotsWidth / 3) * 2;
 
-        for (var i = 0; i < xAxisDots; i++) {
-            two.bind('update', function(frameCount) {
-                var line = two.makeLine(
-                    xPos,
-                    yPos,
-                    xPos,
-                    graphHeight - (chartValues[i] * yAxisDotsWidth)
-                );
-                line.linewidth = lineStroke;
-                line.cap = 'round';
-                xPos = xPos + xAxisDotsWidth;
-                line.stroke = '#FF8000';
-            }).play();
+        console.log(xAxisDots,
+            xAxisDotsWidth,
+            xPos,
+            yAxisDotsWidth,
+            yPos,
+            graphHeight,
+            lineStroke);
+
+        var lineGroup, lineArray = [];
+        for (var i = 0; i < chartValues.length; i++) {
+
+            // var t = graphHeight;
+
+            var y2Pos = graphHeight - (chartValues[i] * yAxisDotsWidth);
+            // console.log(typeof chartValues[i], i)
 
 
+            console.log('Inside For loop....');
+            // two.bind('update', function(frameCount) {
+            var currValue = 0;
+
+
+            // if (t > y2Pos) {
+            console.log('Inside Bind Function....', i, y2Pos);
+            var line = two.makeLine(
+                xPos,
+                yPos,
+                xPos,
+                /*t*/
+                y2Pos
+            );
+            console.log('Here is the line...', line)
+            line.linewidth = lineStroke;
+            line.cap = 'round';
+            // 
+            line.stroke = '#FF8000';
+            // t = t - 10;
+            // } else {
+            // return false;
+            // }
+
+
+            // }).play();
+            lineArray.push(line);
+            xPos = xPos + xAxisDotsWidth;
         }
-        // two.update();
+        lineGroup = two.makeGroup(lineArray);
+        console.log(lineGroup);
+        // lineGroup.opacity = 0.5; 
+        // lineGroup.translation.y = 0;
+        var translateX = 0;
+        // two.bind('update', function(frameCount) {
+        //     if (lineGroup.translation.y > 10) {
+        //         lineGroup.translation.y = lineGroup.translation.y - 1;
+        //     };
+        //     // translateX += 1;
+        // }).play();
+        two.update();
     }
 
     function placeLabels() {
