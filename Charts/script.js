@@ -8,14 +8,16 @@ function DrawChart(obj) {
 
     // variable initializing is done here
     function init() {
-        chartValues = /*obj.data */ chartValueGenerator(0, 50, 10); // generates graph data
+        chartValues = /*obj.data */ chartValueGenerator(0, 50, 50); // generates graph data
         maxChartValue = Math.max.apply(null, chartValues);
         element = document.querySelector(elem);
         element.innerHTML = "";
         two = new Two({
+
             width: width,
             height: height
         }).appendTo(element);
+        // document.getElementById('chartValues').textContent = chartValues;
     }
 
     // validation are done here
@@ -30,6 +32,7 @@ function DrawChart(obj) {
     }
 
     drawBarGraph();
+    // animateGraph();
     // placeLabels();
 
     // Graph plotting is done here
@@ -37,7 +40,7 @@ function DrawChart(obj) {
         var xAxisDots = chartValues.length,
             xAxisDotsWidth = width / xAxisDots,
             xPos = xAxisDotsWidth / 2,
-            yAxisDotsWidth = height / maxChartValue,
+            yAxisDotsWidth = height / (maxChartValue + 2),
             yPos = height - xAxisDotsWidth / 2,
             graphHeight = height - xAxisDotsWidth / 3,
             lineStroke = (xAxisDotsWidth / 3) * 2;
@@ -53,53 +56,50 @@ function DrawChart(obj) {
         var lineGroup, lineArray = [];
         for (var i = 0; i < chartValues.length; i++) {
 
-            // var t = graphHeight;
+            var line, t = graphHeight;
 
             var y2Pos = graphHeight - (chartValues[i] * yAxisDotsWidth);
             // console.log(typeof chartValues[i], i)
 
-
             console.log('Inside For loop....');
             // two.bind('update', function(frameCount) {
             var currValue = 0;
-
-
-            // if (t > y2Pos) {
-            console.log('Inside Bind Function....', i, y2Pos);
-            var line = two.makeLine(
-                xPos,
-                yPos,
-                xPos,
-                /*t*/
-                y2Pos
-            );
-            console.log('Here is the line...', line)
-            line.linewidth = lineStroke;
-            line.cap = 'round';
-            // 
-            line.stroke = '#FF8000';
-            // t = t - 10;
-            // } else {
-            // return false;
-            // }
-
-
+            if (t > y2Pos) {
+                line = two.makeLine(
+                    xPos,
+                    yPos,
+                    xPos,
+                    /*t*/
+                    y2Pos
+                );
+                line.linewidth = lineStroke;
+                line.cap = 'round';
+                line.stroke = '#FF8000';
+                t = t - 10;
+            }
             // }).play();
             lineArray.push(line);
             xPos = xPos + xAxisDotsWidth;
         }
         lineGroup = two.makeGroup(lineArray);
-        console.log(lineGroup);
+        // console.log(lineGroup);
         // lineGroup.opacity = 0.5; 
-        // lineGroup.translation.y = 0;
-        var translateX = 0;
+
+        // animation is done here -- tranlating whole svg graph
+
+        // lineGroup.translation.y = height;
         // two.bind('update', function(frameCount) {
-        //     if (lineGroup.translation.y > 10) {
-        //         lineGroup.translation.y = lineGroup.translation.y - 1;
-        //     };
-        //     // translateX += 1;
+        //     if (lineGroup.translation.y > 0) {
+        //         lineGroup.translation.y = lineGroup.translation.y - 10;
+        //     } else {
+        //         console.log(lineGroup.translation.y);
+        //     }
         // }).play();
+
+
+
         two.update();
+        animateGraph();
     }
 
     function placeLabels() {
@@ -123,12 +123,37 @@ function DrawChart(obj) {
             var value = Math.ceil((Math.random() * max) + min);
             chartValues[i] = value;
         }
-        console.log(chartValues);
+        console.log('Chart Data :', chartValues);
         return chartValues;
+    }
+
+    function animateGraph() {
+        var pathArray = document.querySelectorAll(elem + " " + 'svg path')
+        for (var i = 0; i < pathArray.length; i++) {
+            var path = pathArray[i];
+            var length = path.getTotalLength();
+            // Clear any previous transition
+            path.style.transition = path.style.WebkitTransition =
+                'none';
+            // Set up the starting positions
+            path.style.strokeDasharray = length + ' ' + length;
+            path.style.strokeDashoffset = length;
+            // Trigger a layout so styles are calculated & the browser
+            // picks up the starting position before animating
+            path.getBoundingClientRect();
+            // Define our transition
+            path.style.transition = path.style.WebkitTransition =
+                'stroke-dashoffset 0.344s ease-in-out';
+            // Go!
+            path.style.strokeDashoffset = '0';
+        }
+
+
     }
 
     document.getElementById('resetBtn').onclick = function() {
         init();
         drawBarGraph();
+        // animateGraph();
     }
 }
