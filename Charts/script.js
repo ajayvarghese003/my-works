@@ -127,6 +127,7 @@ function DrawChart(obj) {
         return chartValues;
     }
 
+    //graph animation is done here
     function animateGraph() {
         var pathArray = document.querySelectorAll(elem + " " + 'svg path')
         for (var i = 0; i < pathArray.length; i++) {
@@ -143,17 +144,16 @@ function DrawChart(obj) {
             path.getBoundingClientRect();
             // Define our transition
             path.style.transition = path.style.WebkitTransition =
-                'stroke-dashoffset 0.344s ease-in-out';
+                'stroke-dashoffset 0.344s cubic-bezier(0.23, 0.6, 0.09, 0.96)';
             // Go!
             path.style.strokeDashoffset = '0';
         }
 
 
     }
-
+    
     document.getElementById('resetBtn').onclick = function() {
         init();
         drawBarGraph();
-        // animateGraph();
     }
 }
