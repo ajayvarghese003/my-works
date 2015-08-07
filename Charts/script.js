@@ -8,12 +8,11 @@ function DrawChart(obj) {
 
     // variable initializing is done here
     function init() {
-        chartValues = /*obj.data */ chartValueGenerator(0, 50, 50); // generates graph data
+        chartValues = obj.data /*chartValueGenerator(0, 50, 50)*/ ; // generates graph data
         maxChartValue = Math.max.apply(null, chartValues);
         element = document.querySelector(elem);
         element.innerHTML = "";
         two = new Two({
-
             width: width,
             height: height
         }).appendTo(element);
@@ -32,6 +31,7 @@ function DrawChart(obj) {
     }
 
     drawBarGraph();
+    animate();
     // animateGraph();
     // placeLabels();
 
@@ -45,61 +45,61 @@ function DrawChart(obj) {
             graphHeight = height - xAxisDotsWidth / 3,
             lineStroke = (xAxisDotsWidth / 3) * 2;
 
-        console.log(xAxisDots,
-            xAxisDotsWidth,
-            xPos,
-            yAxisDotsWidth,
-            yPos,
-            graphHeight,
-            lineStroke);
+        var xPos1;
+        console.log(xPos, "Out of Tween");
 
-        var lineGroup, lineArray = [];
-        for (var i = 0; i < chartValues.length; i++) {
-
-            var line, t = graphHeight;
-
-            var y2Pos = graphHeight - (chartValues[i] * yAxisDotsWidth);
-            // console.log(typeof chartValues[i], i)
-
-            console.log('Inside For loop....');
-            // two.bind('update', function(frameCount) {
-            var currValue = 0;
-            if (t > y2Pos) {
-                line = two.makeLine(
-                    xPos,
-                    yPos,
-                    xPos,
-                    /*t*/
-                    y2Pos
-                );
-                line.linewidth = lineStroke;
-                line.cap = 'round';
-                line.stroke = '#FF8000';
-                t = t - 10;
-            }
-            // }).play();
-            lineArray.push(line);
-            xPos = xPos + xAxisDotsWidth;
+        // Below function is called repeatedly to draw the line to its height from 0
+        var updateCallback = function() {
+            var y2 = this.x;
+            var line = two.makeLine(
+                xPos,
+                yPos,
+                xPos,
+                y2
+            );
+            console.log(y2, "Inside Tween");
+            line.linewidth = lineStroke;
+            line.cap = 'round';
+            line.stroke = '#FF8000';
+            two.update();
         }
-        lineGroup = two.makeGroup(lineArray);
-        // console.log(lineGroup);
-        // lineGroup.opacity = 0.5; 
 
-        // animation is done here -- tranlating whole svg graph
+        var tween = [];
+        for (var i = 0; i < chartValues.length; i++) {
+        // var i = 0;
+        // var timer = setInterval(function() {
+                // if (i < chartValues.length) {
+                    console.log('In For loop', i)
 
-        // lineGroup.translation.y = height;
-        // two.bind('update', function(frameCount) {
-        //     if (lineGroup.translation.y > 0) {
-        //         lineGroup.translation.y = lineGroup.translation.y - 10;
-        //     } else {
-        //         console.log(lineGroup.translation.y);
-        //     }
-        // }).play();
+                    var y2Pos = graphHeight - (chartValues[i] * yAxisDotsWidth);
+                    /*var*/ tween[i] = new TWEEN.Tween({
+                            x: yPos
+                        })
+                        .to({
+                            x: y2Pos
+                        }, 500)
+                        .onUpdate(updateCallback)
+                        .easing(TWEEN.Easing.Back.Out)
+                        .onComplete(function() {
+                            xPos = xPos + xAxisDotsWidth;
+                        })/*.start()*/;
+                    // i++;
+                // } else {
+                //     clearInterval(timer);
+                // }
+            // }, 500)
+            }
+            for(var i = 0; i < tween.length; i++){
+             tween[i].start();
+            }
 
+    }
 
-
-        two.update();
-        animateGraph();
+    // Here Graph is updated for every change in x value which varies according to time.
+    function animate(time) {
+        requestAnimationFrame(animate);
+        TWEEN.update(time);
+        console.log('In Animate function');
     }
 
     function placeLabels() {
@@ -151,7 +151,7 @@ function DrawChart(obj) {
 
 
     }
-    
+
     document.getElementById('resetBtn').onclick = function() {
         init();
         drawBarGraph();
