@@ -8,7 +8,7 @@ function DrawChart(obj) {
 
     // variable initializing is done here
     function init() {
-        chartValues = obj.data /*chartValueGenerator(0, 50, 50)*/ ; // generates graph data
+        chartValues = obj.data || chartValueGenerator(0, 50, 50); // generates graph data
         maxChartValue = Math.max.apply(null, chartValues);
         element = document.querySelector(elem);
         element.innerHTML = "";
@@ -31,8 +31,6 @@ function DrawChart(obj) {
     }
 
     drawBarGraph();
-    animate();
-    // animateGraph();
     // placeLabels();
 
     // Graph plotting is done here
@@ -50,11 +48,11 @@ function DrawChart(obj) {
 
         // Below function is called repeatedly to draw the line to its height from 0
         var updateCallback = function() {
-            var y2 = this.x;
+            var y2 = this.y;
             var line = two.makeLine(
-                xPos,
+                this.x,
                 yPos,
-                xPos,
+                this.x,
                 y2
             );
             console.log(y2, "Inside Tween");
@@ -64,42 +62,29 @@ function DrawChart(obj) {
             two.update();
         }
 
-        var tween = [];
         for (var i = 0; i < chartValues.length; i++) {
-        // var i = 0;
-        // var timer = setInterval(function() {
-                // if (i < chartValues.length) {
-                    console.log('In For loop', i)
-
-                    var y2Pos = graphHeight - (chartValues[i] * yAxisDotsWidth);
-                    /*var*/ tween[i] = new TWEEN.Tween({
-                            x: yPos
-                        })
-                        .to({
-                            x: y2Pos
-                        }, 500)
-                        .onUpdate(updateCallback)
-                        .easing(TWEEN.Easing.Back.Out)
-                        .onComplete(function() {
-                            xPos = xPos + xAxisDotsWidth;
-                        })/*.start()*/;
-                    // i++;
-                // } else {
-                //     clearInterval(timer);
-                // }
-            // }, 500)
-            }
-            for(var i = 0; i < tween.length; i++){
-             tween[i].start();
-            }
-
+            var y2Pos = graphHeight - (chartValues[i] * yAxisDotsWidth);
+            var tween = new TWEEN.Tween({
+                    x: xPos,
+                    y: yPos
+                })
+                .to({
+                    x: xPos,
+                    y: y2Pos
+                }, 1000)
+                .onUpdate(updateCallback)
+                .easing(TWEEN.Easing.Back.Out)
+                .start();
+            xPos = xPos + xAxisDotsWidth;
+        }
+        animate();
     }
+
 
     // Here Graph is updated for every change in x value which varies according to time.
     function animate(time) {
         requestAnimationFrame(animate);
         TWEEN.update(time);
-        console.log('In Animate function');
     }
 
     function placeLabels() {
@@ -125,31 +110,6 @@ function DrawChart(obj) {
         }
         console.log('Chart Data :', chartValues);
         return chartValues;
-    }
-
-    //graph animation is done here
-    function animateGraph() {
-        var pathArray = document.querySelectorAll(elem + " " + 'svg path')
-        for (var i = 0; i < pathArray.length; i++) {
-            var path = pathArray[i];
-            var length = path.getTotalLength();
-            // Clear any previous transition
-            path.style.transition = path.style.WebkitTransition =
-                'none';
-            // Set up the starting positions
-            path.style.strokeDasharray = length + ' ' + length;
-            path.style.strokeDashoffset = length;
-            // Trigger a layout so styles are calculated & the browser
-            // picks up the starting position before animating
-            path.getBoundingClientRect();
-            // Define our transition
-            path.style.transition = path.style.WebkitTransition =
-                'stroke-dashoffset 0.344s cubic-bezier(0.23, 0.6, 0.09, 0.96)';
-            // Go!
-            path.style.strokeDashoffset = '0';
-        }
-
-
     }
 
     document.getElementById('resetBtn').onclick = function() {
